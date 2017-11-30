@@ -24,8 +24,8 @@ import tensorflow as tf
 NUM_CHANNELS = 3 # RGB images
 PIXEL_DEPTH = 255
 NUM_LABELS = 2
-TRAINING_SIZE = 20
-VALIDATION_SIZE = 5  # Size of the validation set.
+TRAINING_SIZE = 700
+VALIDATION_SIZE = 100  # Size of the validation set.
 SEED = 66478  # Set to None for random seed.
 BATCH_SIZE = 16 # 64
 NUM_EPOCHS = 5
@@ -62,8 +62,8 @@ def extract_data(filename, num_images):
     Values are rescaled from [0, 255] down to [-0.5, 0.5].
     """
     imgs = []
-    for i in range(1, num_images+1):
-        imageid = "satImage_%.3d" % i
+    for i in range(0, num_images):
+        imageid = "sat_%d" % i
         image_filename = filename + imageid + ".png"
         if os.path.isfile(image_filename):
             print ('Loading ' + image_filename)
@@ -81,7 +81,7 @@ def extract_data(filename, num_images):
     data = [img_patches[i][j] for i in range(len(img_patches)) for j in range(len(img_patches[i]))]
 
     return numpy.asarray(data)
-        
+
 # Assign a label to a patch v
 def value_to_class(v):
     foreground_threshold = 0.25 # percentage of pixels > 1 required to assign a foreground label to a patch
@@ -95,8 +95,8 @@ def value_to_class(v):
 def extract_labels(filename, num_images):
     """Extract the labels into a 1-hot matrix [image index, label index]."""
     gt_imgs = []
-    for i in range(1, num_images+1):
-        imageid = "satImage_%.3d" % i
+    for i in range(0, num_images):
+        imageid = "gt_%d" % i
         image_filename = filename + imageid + ".png"
         if os.path.isfile(image_filename):
             print ('Loading ' + image_filename)
@@ -164,7 +164,7 @@ def concatenate_images(img, gt_img):
         cimg = numpy.concatenate((img, gt_img), axis=1)
     else:
         gt_img_3c = numpy.zeros((w, h, 3), dtype=numpy.uint8)
-        gt_img8 = img_float_to_uint8(gt_img)          
+        gt_img8 = img_float_to_uint8(gt_img)
         gt_img_3c[:,:,0] = gt_img8
         gt_img_3c[:,:,1] = gt_img8
         gt_img_3c[:,:,2] = gt_img8
@@ -187,9 +187,9 @@ def make_img_overlay(img, predicted_img):
 
 def main(argv=None):  # pylint: disable=unused-argument
 
-    data_dir = 'training/'
-    train_data_filename = data_dir + 'images/'
-    train_labels_filename = data_dir + 'groundtruth/' 
+    data_dir = '../augmented_training/'
+    train_data_filename = data_dir + 'satellite/'
+    train_labels_filename = data_dir + 'ground_truth/'
 
     # Extract it into numpy arrays.
     train_data = extract_data(train_data_filename, TRAINING_SIZE)
@@ -276,7 +276,7 @@ def main(argv=None):  # pylint: disable=unused-argument
         V = tf.transpose(V, (2, 0, 1))
         V = tf.reshape(V, (-1, img_w, img_h, 1))
         return V
-    
+
     # Make an image summary for 3d tensor image with index idx
     def get_image_summary_3d(img):
         V = tf.slice(img, (0, 0, 0), (1, -1, -1))
@@ -287,7 +287,7 @@ def main(argv=None):  # pylint: disable=unused-argument
         V = tf.reshape(V, (-1, img_w, img_h, 1))
         return V
 
-    # Get prediction for given input image 
+    # Get prediction for given input image
     def get_prediction(img):
         data = numpy.asarray(img_crop(img, IMG_PATCH_SIZE, IMG_PATCH_SIZE))
         data_node = tf.constant(data)
@@ -404,7 +404,7 @@ def main(argv=None):  # pylint: disable=unused-argument
         norm_grad_i = tf.global_norm([all_grads_node[i]])
         all_grad_norms_node.append(norm_grad_i)
         tf.summary.scalar(all_params_names[i], norm_grad_i)
-    
+
     # L2 regularization for the fully connected parameters.
     regularizers = (tf.nn.l2_loss(fc1_weights) + tf.nn.l2_loss(fc1_biases) +
                     tf.nn.l2_loss(fc2_weights) + tf.nn.l2_loss(fc2_biases))
@@ -422,7 +422,7 @@ def main(argv=None):  # pylint: disable=unused-argument
         0.95,                # Decay rate.
         staircase=True)
     tf.summary.scalar('learning_rate', learning_rate)
-    
+
     # Use simple momentum for the optimization.
     optimizer = tf.train.MomentumOptimizer(learning_rate,
                                            0.0).minimize(loss,
@@ -514,7 +514,7 @@ def main(argv=None):  # pylint: disable=unused-argument
             pimg = get_prediction_with_groundtruth(train_data_filename, i)
             Image.fromarray(pimg).save(prediction_training_dir + "prediction_" + str(i) + ".png")
             oimg = get_prediction_with_overlay(train_data_filename, i)
-            oimg.save(prediction_training_dir + "overlay_" + str(i) + ".png")       
+            oimg.save(prediction_training_dir + "overlay_" + str(i) + ".png")
 
 if __name__ == '__main__':
     tf.app.run()
