@@ -24,8 +24,8 @@ import tensorflow as tf
 NUM_CHANNELS = 3 # RGB images
 PIXEL_DEPTH = 255
 NUM_LABELS = 2
-TRAINING_SIZE = 700
-VALIDATION_SIZE = 100  # Size of the validation set.
+TRAINING_SIZE = 200
+VALIDATION_SIZE = 50  # Size of the validation set.
 SEED = 66478  # Set to None for random seed.
 BATCH_SIZE = 16 # 64
 NUM_EPOCHS = 5
@@ -35,7 +35,7 @@ RECORDING_STEP = 1000
 # Set image patch size in pixels
 # IMG_PATCH_SIZE should be a multiple of 4
 # image size should be an integer multiple of this number!
-IMG_PATCH_SIZE = 16
+IMG_PATCH_SIZE = 4
 
 tf.app.flags.DEFINE_string('train_dir', '/tmp/mnist',
                            """Directory where to write event logs """
@@ -300,7 +300,7 @@ def main(argv=None):  # pylint: disable=unused-argument
     # Get a concatenation of the prediction and groundtruth for given input file
     def get_prediction_with_groundtruth(filename, image_idx):
 
-        imageid = "satImage_%.3d" % image_idx
+        imageid = "sat_%d" % image_idx
         image_filename = filename + imageid + ".png"
         img = mpimg.imread(image_filename)
 
@@ -312,7 +312,7 @@ def main(argv=None):  # pylint: disable=unused-argument
     # Get prediction overlaid on the original image for given input file
     def get_prediction_with_overlay(filename, image_idx):
 
-        imageid = "satImage_%.3d" % image_idx
+        imageid = "sat_%d" % image_idx
         image_filename = filename + imageid + ".png"
         img = mpimg.imread(image_filename)
 
@@ -507,7 +507,7 @@ def main(argv=None):  # pylint: disable=unused-argument
 
 
         print ("Running prediction on training set")
-        prediction_training_dir = "predictions_training/"
+        prediction_training_dir = "../predictions_training/"
         if not os.path.isdir(prediction_training_dir):
             os.mkdir(prediction_training_dir)
         for i in range(1, TRAINING_SIZE+1):
