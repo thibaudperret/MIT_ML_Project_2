@@ -96,4 +96,17 @@ def make_img_overlay(img, predicted_img):
     overlay = Image.fromarray(color_mask, 'RGB').convert("RGBA")
     new_img = Image.blend(background, overlay, 0.2)
     return new_img
+
+def load_test_images(test_dir):
     
+    test_images=[]
+
+    for root, dirs, files in os.walk(test_dir, topdown=False):
+        for name in files:
+            if name != '.DS_Store':
+                test_images.append(load_image(os.path.join(root, name)))
+   
+    print("Loading {} test images".format(len(test_images)))
+    imgs = np.asarray(test_images)
+    print("Size of image: {},{}".format(imgs[0].shape[0],imgs[0].shape[1]))
+    return imgs
