@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os,sys
 from PIL import Image
+import re
 
 def load_image(infilename):
     data = mpimg.imread(infilename) #Array of pixels
@@ -97,15 +98,26 @@ def make_img_overlay(img, predicted_img):
     new_img = Image.blend(background, overlay, 0.2)
     return new_img
 
+def sort_nicely(list_):
+
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+    list_.sort(key=alphanum_key)
+
 def load_test_images(test_dir):
     
     test_images=[]
+    file_paths = []
 
     for root, dirs, files in os.walk(test_dir, topdown=False):
-        for name in files:
+        for name in (files):
             if name != '.DS_Store':
-                test_images.append(load_image(os.path.join(root, name)))
-   
+                path = os.path.join(root,name)
+                file_paths.append(path)
+    
+    sort_nicely(file_paths)    
+    test_images = [load_image(file_paths[i]) for i in range(len(file_paths))]
+                              
     print("Loading {} test images".format(len(test_images)))
     imgs = np.asarray(test_images)
     print("Size of image: {},{}".format(imgs[0].shape[0],imgs[0].shape[1]))
