@@ -1,5 +1,4 @@
 # Helper functions
-
 import matplotlib.image as mpimg
 import numpy as np
 import matplotlib.pyplot as plt
@@ -106,7 +105,7 @@ def sort_nicely(list_):
 
 def load_test_images(test_dir):
     
-    test_images=[]
+    test_images= []
     file_paths = []
 
     for root, dirs, files in os.walk(test_dir, topdown=False):
@@ -115,10 +114,12 @@ def load_test_images(test_dir):
                 path = os.path.join(root,name)
                 file_paths.append(path)
     
-    sort_nicely(file_paths)    
+    sort_nicely(file_paths)  
+    print(file_paths)
     test_images = [load_image(file_paths[i]) for i in range(len(file_paths))]
                               
     print("Loading {} test images".format(len(test_images)))
     imgs = np.asarray(test_images)
     print("Size of image: {},{}".format(imgs[0].shape[0],imgs[0].shape[1]))
     return imgs
+
